@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Login</title>
+<link href="style.css" rel="stylesheet" />
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+</head>
+<body>
+<div class="container">
+  <h1>Log In</h1>
+  <form id="loginForm">
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <div class="g-recaptcha" data-sitekey="6LdhMp0rAAAAAGW5FVBSalTy4qYtVC29ulPb6cde"></div>
+    <button type="submit">Log In</button>
+    <p class="message" id="message"></p>
+    <p class="link">Don't have an account? <a href="/signup.html">Sign up</a></p>
+  </form>
+</div>
+
+<script type="module">
+  import { auth } from './firebase.js';
+  import { signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js';
+
+  const form = document.getElementById('loginForm');
+  const message = document.getElementById('message');
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const email = form.email.value;
+    const password = form.password.value;
+    const captchaToken = grecaptcha.getResponse();
+
+    if (!captchaToken) {
+      message.textContent = 'Please complete the CAPTCHA.';
+      message.style.color = 'red';
+      return;
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      message.textContent = 'Login successful!';
+      message.style.color = 'lightgreen';
+      form.reset();
+      grecaptcha.reset();
+      // You can redirect user to another page here, e.g.:
+      // window.location.href = "/dashboard.html";
+    } catch (error) {
+      message.textContent = error.message;
+      message.style.color = 'red';
+    }
+  });
+</script>
+</body>
+</html>

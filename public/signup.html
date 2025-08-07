@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sign Up</title>
+<script src="https://www.google.com/recaptcha/api.js" async defer></script>
+<style>
+  body { background: #121212; color: #eee; font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; }
+  form { background: #222; padding: 2rem; border-radius: 8px; width: 320px; }
+  input, button { width: 100%; margin: 0.5rem 0; padding: 0.8rem; border-radius: 4px; border: none; }
+  input { background: #333; color: #eee; }
+  button { background: #007bff; color: white; font-weight: bold; cursor: pointer; }
+  .message { margin-top: 1rem; height: 1.2rem; }
+</style>
+</head>
+<body>
+  <form id="signupForm">
+    <h2>Sign Up</h2>
+    <input type="email" id="email" placeholder="Email" required />
+    <input type="password" id="password" placeholder="Password" required />
+    <div class="g-recaptcha" data-sitekey="6LdhMp0rAAAAAGW5FVBSalTy4qYtVC29ulPb6cde"></div>
+    <button type="submit">Create Account</button>
+    <div class="message" id="message"></div>
+    <p style="margin-top: 1rem; color: #ccc; font-size: 0.9rem;"> Already have an account? <a href="/login.html" style="color: #4ea8ff;">Log in</a></p>
+
+  </form>
+
+<script>
+  const form = document.getElementById('signupForm');
+  const message = document.getElementById('message');
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+
+    const email = form.email.value;
+    const password = form.password.value;
+    const captchaToken = grecaptcha.getResponse();
+
+    if (!captchaToken) {
+      message.textContent = 'Please complete the CAPTCHA.';
+      message.style.color = 'red';
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, 'g-recaptcha-response': captchaToken }),
+      });
+      const data = await res.json();
+      message.textContent = data.message || data.error;
+      message.style.color = res.ok ? 'lightgreen' : 'red';
+
+      if (res.ok) {
+        form.reset();
+        grecaptcha.reset();
+      }
+    } catch {
+      message.textContent = 'Server error.';
+      message.style.color = 'red';
+    }
+  });
+</script>
+</body>
+</html>
